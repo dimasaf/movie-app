@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { View, Text, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { RouteProp } from "@react-navigation/native";
 import { API_ACCESS_TOKEN } from "@env";
 import { Movie } from "../types/app";
 import MovieItem from "../components/movies/MovieItem";
 import { coverImageSize } from "../components/movies/MovieList";
-
-interface MovieDetailType {
-  original_title: string;
-  overview: string;
-}
+import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
-  const [movieDetail, setMovieDetail] = useState<MovieDetailType>({
-    original_title: "-",
-    overview: "-",
-  });
+  const [movieDetail, setMovieDetail] = useState<Movie>();
   const [movieRecommendation, setMovieRecommendation] = useState<Movie[]>([]);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const getMovieDetail = (): void => {
     const url = `https://api.themoviedb.org/3/movie/${route.params?.id}`;
@@ -59,23 +60,82 @@ const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
       });
   };
 
+  const addFavorite = async (movie: Movie): Promise<void> => {
+    try {
+      const initialData: string | null = await AsyncStorage.getItem(
+        "@FavoriteList"
+      );
+      console.log(initialData);
+
+      let favMovieList: Movie[] = [];
+
+      if (initialData !== null) {
+        favMovieList = [...JSON.parse(initialData), movie];
+      } else {
+        favMovieList = [movie];
+      }
+
+      await AsyncStorage.setItem("@FavoriteList", JSON.stringify(favMovieList));
+      setIsFavorite(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const removeFavorite = async (id: number): Promise<void> => {
+    try {
+      const initialData: string | null = await AsyncStorage.getItem(
+        "@FavoriteList"
+      );
+      console.log(initialData, id);
+      // Tulis code untuk menghapus film dari storage
+      // 1. filter data by id
+      // 2. set localStoragenya
+      // 3. jangan lupa setFavorite jadi false
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const checkIsFavorite = async (id: number) => {
+    try {
+      const initialData: string | null = await AsyncStorage.getItem(
+        "@FavoriteList"
+      );
+      const parsedData: Movie[] = JSON.parse(initialData as string);
+
+      if (initialData !== null) {
+        const checkFavorite = parsedData.find((movie) => movie.id === id);
+        if (checkFavorite) {
+          setIsFavorite(true);
+        } else {
+          setIsFavorite(false);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     getMovieDetail();
     getMovieRecommendation();
   }, []);
 
+  useEffect(() => {
+    checkIsFavorite(movieDetail?.id as number);
+  }, [movieDetail]);
+
   return (
     <View style={{ flex: 1, justifyContent: "center" }}>
       <Text style={{ marginBottom: 4, fontSize: 24 }}>
-        {movieDetail.original_title}
+        {movieDetail?.original_title}
       </Text>
-      <Text style={{ marginBottom: 50 }}>{movieDetail.overview}</Text>
+      <Text style={{ marginBottom: 50 }}>{movieDetail?.overview}</Text>
 
       <Text>Recomendation</Text>
       <FlatList
-        style={{
-          flex: 1,
-        }}
+        style={styles.movieList}
         showsHorizontalScrollIndicator={false}
         horizontal
         data={movieRecommendation}
@@ -88,8 +148,33 @@ const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
+
+      <View style={{ flexDirection: "row", justifyContent: "center" }}>
+        <TouchableOpacity
+          onPress={() =>
+            !isFavorite
+              ? addFavorite(movieDetail as Movie)
+              : removeFavorite(movieDetail?.id as number)
+          }
+        >
+          <FontAwesome
+            name={isFavorite ? "heart" : "heart-o"}
+            size={60}
+            color={"blue"}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 export default MovieDetail;
+
+const styles = StyleSheet.create({
+  movieList: {
+    paddingLeft: 4,
+    marginTop: 8,
+    marginBottom: 20,
+    maxHeight: 160,
+  },
+});

@@ -42,8 +42,6 @@ const MovieList = ({ title, coverType, path }: MovieListProps) => {
     getMovieList();
   }, []);
 
-  console.log("movies>>", movies);
-
   return (
     <View>
       <View style={styles.header}>

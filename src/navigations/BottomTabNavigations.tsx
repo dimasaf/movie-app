@@ -36,7 +36,7 @@ const BottomTabNavigator = (): JSX.Element => (
         tabBarIcon: ({ color }) => (
           <Feather name="heart" size={28} color={color} />
         ),
-        headerShown: false,
+        headerShown: true,
       }}
     />
   </Tab.Navigator>
