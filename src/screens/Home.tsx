@@ -1,12 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
+import HomeStackNavigation from "../navigations/HomeStackNavigation";
+import { NavigationContainer } from "@react-navigation/native";
 
 const Home = () => {
-  return (
-    <View>
-      <Text>Home</Text>
-    </View>
-  );
+  return <HomeStackNavigation />;
 };
 
 export default Home;
