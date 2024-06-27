@@ -1,38 +1,55 @@
-import { API_ACCESS_TOKEN, API_URL } from "@env";
 import React from "react";
-import { Button, View } from "react-native";
+import { ScrollView, StyleSheet, StatusBar, View } from "react-native";
+import type { MovieListProps } from "../types/app";
+import MovieList from "../components/movies/MovieList";
 
-const Home = ({ navigation }: { navigation: any }) => {
-  function fetchDataDetail() {
-    if (API_URL == null || API_ACCESS_TOKEN.length == null) {
-      throw new Error("ENV not found");
-    }
+const movieLists: MovieListProps[] = [
+  {
+    title: "Now Playing in Theater",
+    path: "movie/now_playing?language=en-US&page=1",
+    coverType: "backdrop",
+  },
+  {
+    title: "Upcoming Movies",
+    path: "movie/upcoming?language=en-US&page=1",
+    coverType: "poster",
+  },
+  {
+    title: "Top Rated Movies",
+    path: "movie/top_rated?language=en-US&page=1",
+    coverType: "poster",
+  },
+  {
+    title: "Popular Movies",
+    path: "movie/popular?language=en-US&page=1",
+    coverType: "poster",
+  },
+];
 
-    const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${API_ACCESS_TOKEN}`,
-      },
-    };
-
-    fetch(API_URL, options)
-      .then((res) => res.json())
-      .then((response) => {
-        console.log("response >", response);
-      })
-      .catch(() => console.error);
-  }
-
+const Home = () => {
   return (
-    <View>
-      <Button
-        title="onDetail"
-        onPress={() => navigation.navigate("MovieDetail")}
-      />
-      <Button title="fetch Data" onPress={fetchDataDetail} />
-    </View>
+    <ScrollView>
+      <View style={styles.container}>
+        {movieLists.map((movie) => (
+          <MovieList
+            title={movie.title}
+            path={movie.path}
+            coverType={movie.coverType}
+            key={movie.title}
+          />
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
 export default Home;
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: StatusBar.currentHeight ?? 32,
+    alignItems: "center",
+    justifyContent: "center",
+    rowGap: 16,
+  },
+});
