@@ -16,7 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
-  const [movieDetail, setMovieDetail] = useState<Movie>();
+  const [movieDetail, setMovieDetail] = useState<Movie | null>();
   const [movieRecommendation, setMovieRecommendation] = useState<Movie[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -33,7 +33,7 @@ const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
     fetch(url, options)
       .then(async (response) => await response.json())
       .then((response) => {
-        setMovieDetail(response);
+        setMovieDetail(response as Movie);
       })
       .catch((errorResponse) => {
         console.error(errorResponse);
@@ -87,11 +87,19 @@ const MovieDetail = ({ route }: { route: RouteProp<any> }) => {
       const initialData: string | null = await AsyncStorage.getItem(
         "@FavoriteList"
       );
-      console.log(initialData, id);
-      // Tulis code untuk menghapus film dari storage
+      const parsedDataLocalStorage: Movie[] = JSON.parse(initialData as string);
+      console.log("initialdata, id", parsedDataLocalStorage, id);
       // 1. filter data by id
+      const removedData = parsedDataLocalStorage.filter(
+        (movie) => movie.id !== id
+      );
+      console.log("removedData", removedData);
+
       // 2. set localStoragenya
+      await AsyncStorage.setItem("@FavoriteList", JSON.stringify(removedData));
+
       // 3. jangan lupa setFavorite jadi false
+      setIsFavorite(false);
     } catch (error) {
       console.log(error);
     }
